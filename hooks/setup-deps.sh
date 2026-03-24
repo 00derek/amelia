@@ -1,14 +1,16 @@
 #!/bin/bash
 
-MARKER="${CLAUDE_PLUGIN_DATA}/uv-synced"
+CACHED="${CLAUDE_PLUGIN_DATA}/pyproject.toml"
+CURRENT="${CLAUDE_PLUGIN_ROOT}/pyproject.toml"
 
-if [ ! -f "$MARKER" ]; then
-  echo "Installing amelia dependencies..."
+mkdir -p "${CLAUDE_PLUGIN_DATA}"
+
+if ! diff -q "$CACHED" "$CURRENT" >/dev/null 2>&1; then
+  echo "amelia: installing dependencies..."
   cd "${CLAUDE_PLUGIN_ROOT}" || exit 1
 
   if uv sync; then
-    mkdir -p "${CLAUDE_PLUGIN_DATA}"
-    touch "$MARKER"
+    cp "$CURRENT" "$CACHED"
     echo "amelia: dependencies installed"
   else
     echo "amelia: failed to install dependencies"
