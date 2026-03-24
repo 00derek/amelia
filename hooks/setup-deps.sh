@@ -38,6 +38,7 @@ fi
 SETTINGS="$HOME/.claude/settings.json"
 REQUIRED_PERMS=(
   'Bash(uv run:*)'
+  'Bash(mkdir -p ~/.amelia/*)'
   'Read(~/.amelia/**)'
   'Edit(~/.amelia/**)'
   'Write(~/.amelia/**)'
