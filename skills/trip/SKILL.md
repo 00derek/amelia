@@ -125,11 +125,21 @@ Update `~/.amelia/trip-index.json`:
 
 Use the **Agent tool** to dispatch searches in parallel. For each route in `trip.json.routes`:
 
+**IMPORTANT**: Subagents do not have access to `${CLAUDE_PLUGIN_ROOT}`. You must pass the resolved path in every agent prompt. Use this variable in all prompts below:
+
+```
+AMELIA_CMD="uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia"
+```
+
 **Cash flight search (always):**
 ```
 Agent prompt: "You are running the flight-search skill. Read the skill at
 ${CLAUDE_PLUGIN_ROOT}/skills/flight-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
+
+IMPORTANT: The amelia CLI must be run as:
+{AMELIA_CMD}
+Use this exact command prefix for ALL amelia commands. Do NOT run bare 'amelia'.
 
 Search params:
 - Origin: {from}
@@ -147,6 +157,10 @@ Agent prompt: "You are running the award-search skill. Read the skill at
 ${CLAUDE_PLUGIN_ROOT}/skills/award-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
 
+IMPORTANT: The amelia CLI must be run as:
+{AMELIA_CMD}
+Use this exact command prefix for ALL amelia commands. Do NOT run bare 'amelia'.
+
 Search params:
 - Origin: {from}
 - Destination: {to}
@@ -161,6 +175,10 @@ Search params:
 Agent prompt: "You are running the hotel-search skill. Read the skill at
 ${CLAUDE_PLUGIN_ROOT}/skills/hotel-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
+
+IMPORTANT: The amelia CLI must be run as:
+{AMELIA_CMD}
+Use this exact command prefix for ALL amelia commands. Do NOT run bare 'amelia'.
 
 Search params:
 - City: {hotel_search.city}

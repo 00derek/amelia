@@ -1,6 +1,6 @@
 [project]
 name = "amelia"
-version = "0.1.5"
+version = "0.1.6"
 description = "Travel agent CLI — flights, awards, hotels with trip memory"
 requires-python = ">=3.12"
 dependencies = [
