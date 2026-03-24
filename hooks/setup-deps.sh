@@ -5,6 +5,7 @@ CURRENT="${CLAUDE_PLUGIN_ROOT}/pyproject.toml"
 
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 
+# Install/update dependencies when pyproject.toml changes
 if ! diff -q "$CACHED" "$CURRENT" >/dev/null 2>&1; then
   echo "amelia: installing dependencies..."
   cd "${CLAUDE_PLUGIN_ROOT}" || exit 1
@@ -18,10 +19,19 @@ if ! diff -q "$CACHED" "$CURRENT" >/dev/null 2>&1; then
   fi
 fi
 
+# Create starter config if it doesn't exist
+if [ ! -d "$HOME/.amelia" ]; then
+  mkdir -p "$HOME/.amelia"
+fi
+
+if [ ! -f "$HOME/.amelia/config.md" ]; then
+  cp "${CLAUDE_PLUGIN_ROOT}/config.default.md" "$HOME/.amelia/config.md"
+  echo "amelia: created ~/.amelia/config.md — edit it to set your preferences"
+fi
+
 # Prompt user to create .env if it doesn't exist
 if [ ! -f "$HOME/.amelia/.env" ]; then
   echo "amelia: no API keys found. Create ~/.amelia/.env with your keys:"
-  echo "  mkdir -p ~/.amelia"
   echo "  echo 'SEATS_AERO_API_KEY=your-key' >> ~/.amelia/.env"
   echo "  echo 'SERPAPI_KEY=your-key' >> ~/.amelia/.env"
 fi

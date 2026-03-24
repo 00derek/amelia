@@ -30,6 +30,16 @@ EOF
 
 The plugin loads these automatically — no need to export them in your shell profile.
 
+### Set Up Your Preferences
+
+Run the setup skill to configure your home airport, cabin preferences, loyalty programs, and travel profiles:
+
+```
+/amelia:setup
+```
+
+It walks you through each section interactively and writes `~/.amelia/config.md`. You can re-run it anytime to update.
+
 ## What You Can Ask
 
 ### Plan a trip
@@ -105,9 +115,31 @@ amelia hotels search --city TPE --checkin 2026-07-01 --checkout 2026-07-05
 amelia config show --profile tournament
 ```
 
+## Updating
+
+To manually pull the latest version:
+
+```
+/plugin update amelia@00derek-amelia
+```
+
+Or enable auto-updates so new versions are pulled at startup:
+
+```
+/plugin → Marketplaces → 00derek-amelia → Enable auto-update
+```
+
 ## Configuration
 
-Edit `~/.amelia/config.md` for preferences, profiles, and loyalty programs. Created automatically on first run.
+Run `/amelia:setup` to configure interactively, or edit `~/.amelia/config.md` directly. A starter config is created on first run.
+
+You can customize:
+- **Global defaults** — home airport, cabin class, stops, hotel budget
+- **Loyalty programs** — your memberships and status
+- **Profiles** — named presets for different trip types (e.g., "weekend-trip", "international")
+- **Active sources** — which hotel chains to search
+
+When you say something like "search using my international profile", Amelia applies that profile's settings on top of your global defaults.
 
 ## API Keys
 
