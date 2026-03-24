@@ -1,8 +1,35 @@
 {
   "name": "amelia",
-  "description": "Travel agent — flights, awards, hotels with trip memory",
-  "version": "1.0.0",
-  "author": { "name": "Derek" },
+  "description": "Travel agent — search flights (cash + award), hotels, and manage trip memory via Claude Code",
+  "version": "0.1.0",
+  "author": {
+    "name": "Derek",
+    "url": "https://github.com/00derek"
+  },
   "repository": "https://github.com/00derek/amelia",
-  "license": "MIT"
+  "homepage": "https://github.com/00derek/amelia",
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "trip",
+      "path": "skills/trip/SKILL.md",
+      "description": "Create and manage trips. Dispatches flight, award, and hotel searches in parallel. Handles trip memory."
+    },
+    {
+      "name": "flight-search",
+      "path": "skills/flight-search/SKILL.md",
+      "description": "Search cash flight prices using Google Flights data"
+    },
+    {
+      "name": "award-search",
+      "path": "skills/award-search/SKILL.md",
+      "description": "Search award flight availability via Seats.aero API"
+    },
+    {
+      "name": "hotel-search",
+      "path": "skills/hotel-search/SKILL.md",
+      "description": "Search hotel rates via Google Hotels data"
+    }
+  ],
+  "keywords": ["travel", "flights", "awards", "hotels", "trips"]
 }
