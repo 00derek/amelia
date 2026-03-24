@@ -9,27 +9,6 @@
   "repository": "https://github.com/00derek/amelia",
   "homepage": "https://github.com/00derek/amelia",
   "license": "MIT",
-  "skills": [
-    {
-      "name": "trip",
-      "path": "skills/trip/SKILL.md",
-      "description": "Create and manage trips. Dispatches flight, award, and hotel searches in parallel. Handles trip memory."
-    },
-    {
-      "name": "flight-search",
-      "path": "skills/flight-search/SKILL.md",
-      "description": "Search cash flight prices using Google Flights data"
-    },
-    {
-      "name": "award-search",
-      "path": "skills/award-search/SKILL.md",
-      "description": "Search award flight availability via Seats.aero API"
-    },
-    {
-      "name": "hotel-search",
-      "path": "skills/hotel-search/SKILL.md",
-      "description": "Search hotel rates via Google Hotels data"
-    }
-  ],
+  "skills": "./skills/",
   "keywords": ["travel", "flights", "awards", "hotels", "trips"]
 }
