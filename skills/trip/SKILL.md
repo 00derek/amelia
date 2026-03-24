@@ -45,17 +45,17 @@ Extract as much as you can from the user's message. Only ask about what's missin
 - Destination → AskUserQuestion with options: ["NRT — Tokyo Narita", "HND — Tokyo Haneda"] and allow free text for other codes
 
 Ask in this priority order (skip any that are already known or have defaults):
-1. **Destination** — only if not provided
-2. **Date** — only if not provided (outbound date)
-3. **Return date** — only if not provided and not derivable. Suggest durations based on destination (e.g., 1 week, 10 days, 2 weeks)
-4. **Profile** — suggest a match if one fits, ask to confirm
+1. **Return date** — only if not provided and not derivable. Suggest durations based on destination (e.g., 1 week, 10 days, 2 weeks)
+2. **Profile** — suggest a match if one fits, ask to confirm
+3. **Connection city** — only for destinations that require connections (no direct flights from origin). Suggest the main hub options. Example for Brazil: ["GRU — São Paulo (main hub, most flights)", "GIG — Rio de Janeiro", "Both — search via GRU and GIG"]. The user might want to visit the connection city too.
+4. **Destination** — only if not provided
+5. **Date** — only if not provided (outbound date)
 
 Do NOT ask about:
 - **Origin** — use home_airport from config
 - **Cabin** — use profile/config default
 - **Stops** — use profile/config default
 - **Min seats** — use profile/config default
-- **Routing/connections** — figure this out yourself based on airport connectivity (search each leg separately)
 - **Custom alias** — auto-generate from destination, only ask on collision
 
 ### Step 2: Generate Alias
