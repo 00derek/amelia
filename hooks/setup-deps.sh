@@ -39,6 +39,7 @@ SETTINGS="$HOME/.claude/settings.json"
 if [ -f "$SETTINGS" ]; then
   MISSING=""
   grep -q 'Bash(uv run:\*)' "$SETTINGS" 2>/dev/null || MISSING="$MISSING Bash(uv run:*)"
+  grep -q 'Read(~/.amelia/\*\*)' "$SETTINGS" 2>/dev/null || MISSING="$MISSING Read(~/.amelia/**)"
   grep -q 'Edit(~/.amelia/\*\*)' "$SETTINGS" 2>/dev/null || MISSING="$MISSING Edit(~/.amelia/**)"
   grep -q 'Write(~/.amelia/\*\*)' "$SETTINGS" 2>/dev/null || MISSING="$MISSING Write(~/.amelia/**)"
   if [ -n "$MISSING" ]; then
