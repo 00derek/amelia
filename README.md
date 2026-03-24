@@ -22,55 +22,51 @@ export SEATS_AERO_API_KEY=your-key-here    # Required for award search
 export SERPAPI_KEY=your-key-here             # Optional (fast-hotels fallback)
 ```
 
-## Skills
+## What You Can Ask
 
-### `/amelia:trip` — Trip orchestrator
+### Plan a trip
 
-The main skill. Creates a trip, dispatches flight + award + hotel searches in parallel, and stores results for tracking over time.
+> "I'm flying from SFO to Taipei around July 1st, business class, 2 passengers. Find me flights and a hotel."
 
-```
-/amelia:trip new SFO TPE 2026-07-01
-```
+Amelia creates a trip, searches cash flights + award availability + hotels in parallel, and saves everything to `~/.amelia/trips/tpe/` so you can track prices over time.
 
-Amelia will ask for details (cabin, return date, etc.) or pull them from your config profile. It then searches all sources simultaneously and writes results to `~/.amelia/trips/tpe/`.
+> "Plan a trip to Brazil — SFO to Sao Paulo July 17, then domestic to Joao Pessoa, then Rio, back from Sao Paulo July 30"
 
-**Other trip commands:**
+Handles multi-leg itineraries with separate searches per segment.
 
-| Command | What it does |
-|---------|-------------|
-| `/amelia:trip check TPE` | Re-run searches with stored params, shows price changes (↑↓) vs last run |
-| `/amelia:trip show TPE` | Show cached results without making any API calls |
-| `/amelia:trip list` | List all tracked trips with routes, dates, and search counts |
+### Search for flights
 
-### `/amelia:flight-search` — Cash flights
+> "What's the cheapest nonstop flight from SFO to Tokyo in June?"
 
-Searches Google Flights for cash prices on a single route. Can run standalone or dispatched by `/amelia:trip`.
+> "Find me business class flights to London next Friday, I'm flexible by a few days"
 
-```
-/amelia:flight-search
-```
+Returns a table with prices, airlines, layover details, and a Google Flights link. Automatically widens the date range if nothing is found on the exact date.
 
-Amelia will ask for origin, destination, date, cabin, and stops. Returns a formatted table with prices, layover details, and a Google Flights link. Auto-widens the date range if no results found.
+### Find award availability
 
-### `/amelia:award-search` — Award flights
+> "Can I use miles to get to Taipei in July? I need 2 seats in business."
 
-Searches Seats.aero for award availability. Requires `SEATS_AERO_API_KEY`.
+> "What award programs have availability from SFO to Europe this summer?"
 
-```
-/amelia:award-search
-```
+Searches Seats.aero across 24 mileage programs. Starts with cached results, then widens dates, then checks bulk availability — uses live search only as a last resort to conserve API quota.
 
-Uses a multi-step strategy: cached search first, then widens dates, then bulk availability, then live search as a last resort. Returns miles cost, taxes, routing, and seat count.
+### Search hotels
 
-### `/amelia:hotel-search` — Hotels
+> "Find me a hotel in Taipei for July 1-5, under $200/night, at least 3 stars"
 
-Searches Google Hotels for rates.
+> "What Marriott or Hyatt options are there in Tokyo for my trip dates?"
 
-```
-/amelia:hotel-search
-```
+Returns rates, ratings, distance, and booking links. Filters by chain, star rating, and budget from your config.
 
-Returns hotel name, chain, stars, rate/night, total, rating, and booking links. Filters by price range and star rating from your config.
+### Track and compare prices
+
+> "Check the Taipei trip again — any price changes?"
+
+> "What did we find for the Brazil trip last time?"
+
+> "Show me all my tracked trips"
+
+Re-runs searches with stored params and shows price changes (↑↓) compared to the last run. Or just recalls cached results without making any API calls.
 
 ## CLI Usage (standalone)
 
