@@ -16,12 +16,12 @@ Each invocation searches **one route, one direction**. The orchestrator handles 
 
 | Command | Purpose |
 |---------|---------|
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards search` | Cached search — primary, route-specific |
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards trip <id>` | Trip details + booking links for a result |
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards availability` | Bulk program availability — fallback |
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards live` | Real-time search — most expensive, use sparingly |
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards programs` | List available mileage programs |
-| `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards routes` | List routes for a specific program |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards search` | Cached search — primary, route-specific |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards trip <id>` | Trip details + booking links for a result |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards availability` | Bulk program availability — fallback |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards live` | Real-time search — most expensive, use sparingly |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards programs` | List available mileage programs |
+| `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards routes` | List routes for a specific program |
 
 ## Read Config
 
@@ -46,7 +46,7 @@ If orchestrator provides these in the prompt, skip AskUserQuestion.
 ### Step 1: Cached Search (Primary)
 
 ```bash
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards search \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards search \
   --from {origin} --to {destination} \
   --date {start_date} --end-date {end_date} \
   --cabin {cabin} \
@@ -69,7 +69,7 @@ If cached search returns empty:
 If cached search + widening returns nothing:
 
 ```bash
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards availability \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards availability \
   --source {program} \
   --cabin {cabin} \
   --origin-region "North America" --dest-region "{region}" \
@@ -85,7 +85,7 @@ Filter results for the requested origin/destination pair.
 If bulk availability also returns nothing and user specifically requests real-time data:
 
 ```bash
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards live \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards live \
   --from {origin} --to {destination} \
   --date {date} --source {program} \
   --seats {min_seats}
@@ -98,7 +98,7 @@ Note: Live search uses more API quota. Only use when explicitly requested or cac
 For the top 5 results (after filtering), enrich with routing details:
 
 ```bash
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards trip {availability_id}
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards trip {availability_id}
 ```
 
 Parse trip details for:
@@ -120,10 +120,10 @@ When the user asks about available programs or routes:
 
 ```bash
 # List all 24 mileage programs
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards programs
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards programs
 
 # What routes does United have from SFO?
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia awards routes --source united
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia awards routes --source united
 ```
 
 ## Rate Limit Awareness

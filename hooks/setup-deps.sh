@@ -17,3 +17,11 @@ if ! diff -q "$CACHED" "$CURRENT" >/dev/null 2>&1; then
     exit 1
   fi
 fi
+
+# Prompt user to create .env if it doesn't exist
+if [ ! -f "$HOME/.amelia/.env" ]; then
+  echo "amelia: no API keys found. Create ~/.amelia/.env with your keys:"
+  echo "  mkdir -p ~/.amelia"
+  echo "  echo 'SEATS_AERO_API_KEY=your-key' >> ~/.amelia/.env"
+  echo "  echo 'SERPAPI_KEY=your-key' >> ~/.amelia/.env"
+fi

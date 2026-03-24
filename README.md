@@ -15,12 +15,20 @@ If you install during an active session, run `/reload-plugins` to activate.
 
 ### API Keys
 
-Set these in your shell profile:
+Create `~/.amelia/.env` with your keys:
 
 ```bash
-export SEATS_AERO_API_KEY=your-key-here    # Required for award search
-export SERPAPI_KEY=your-key-here             # Optional (fast-hotels fallback)
+mkdir -p ~/.amelia
+cat > ~/.amelia/.env << 'EOF'
+SEATS_AERO_API_KEY=your-key-here
+SERPAPI_KEY=your-key-here
+EOF
 ```
+
+- `SEATS_AERO_API_KEY` — [Seats.aero Pro](https://seats.aero) key (required for award search)
+- `SERPAPI_KEY` — [SerpAPI](https://serpapi.com) key (optional, hotel search fallback)
+
+The plugin loads these automatically — no need to export them in your shell profile.
 
 ## What You Can Ask
 
@@ -102,6 +110,8 @@ amelia config show --profile tournament
 Edit `~/.amelia/config.md` for preferences, profiles, and loyalty programs. Created automatically on first run.
 
 ## API Keys
+
+Store keys in `~/.amelia/.env` (loaded automatically by the plugin):
 
 - `SEATS_AERO_API_KEY` — [Seats.aero Pro](https://seats.aero) key for award searches
 - `SERPAPI_KEY` — [SerpAPI](https://serpapi.com) key for hotel search (optional)

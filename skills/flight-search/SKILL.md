@@ -5,7 +5,7 @@ description: Search for cash flight prices using Google Flights data via amelia 
 
 ## Overview
 
-Searches for cash flight prices on a single route using `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia flights search` (Google Flights data).
+Searches for cash flight prices on a single route using `uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia flights search` (Google Flights data).
 Can run standalone (prompts for input) or orchestrated (receives params, returns results).
 
 Each invocation searches **one route, one direction**. The orchestrator handles outbound + return as separate dispatches.
@@ -37,7 +37,7 @@ If orchestrator provides these in the prompt, skip AskUserQuestion and use provi
 2. Run the amelia CLI:
 
 ```bash
-uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia flights search \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} --env-file ~/.amelia/.env amelia flights search \
   --from {origin} --to {destination} --date {date} \
   --cabin {cabin} --stops {stops} --sort cheapest \
   [--time {time_window}] [--airlines {airlines}]
