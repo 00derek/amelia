@@ -9,20 +9,13 @@ Travel agent CLI + Claude Code plugin for searching flights (cash + award), hote
 /plugin install amelia@00derek-amelia
 ```
 
-This copies the plugin to your local Claude Code cache (`~/.claude/plugins/cache/`). No cloning or `uv sync` needed — the skills are available immediately.
+Python dependencies are installed automatically on first session start via a `SessionStart` hook — no manual setup needed.
 
 If you install during an active session, run `/reload-plugins` to activate.
 
-### Setup
+### API Keys
 
-The CLI needs Python dependencies to run searches. After installing the plugin, set up the CLI once:
-
-```bash
-cd ~/.claude/plugins/cache/amelia   # or wherever the plugin was cached
-uv sync
-```
-
-Set your API keys (add these to your shell profile):
+Set these in your shell profile:
 
 ```bash
 export SEATS_AERO_API_KEY=your-key-here    # Required for award search
