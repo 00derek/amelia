@@ -1,9 +1,9 @@
 {
   "name": "amelia",
   "description": "Travel agent — search flights (cash + award), hotels, and manage trip memory via Claude Code",
-  "version": "0.1.18",
+  "version": "0.1.20",
   "author": {
-    "name": "Derek",
+    "name": "Derek Chang",
     "url": "https://github.com/00derek"
   },
   "repository": "https://github.com/00derek/amelia",

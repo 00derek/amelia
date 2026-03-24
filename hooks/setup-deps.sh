@@ -34,29 +34,32 @@ if [ ! -f "$HOME/.amelia/.env" ]; then
   echo "AMELIA SETUP REQUIRED: ~/.amelia/.env does not exist. Before running any travel searches, you MUST ask the user for their API keys and create the file. Ask for: SEATS_AERO_API_KEY (required — from seats.aero Pro plan) and SERPAPI_KEY (optional — for hotel search fallback). Write them to ~/.amelia/.env. Alternatively, run /amelia:setup which includes key collection."
 fi
 
-# Seed required permissions directly into user settings
+# Check for missing permissions — tell Claude to ask user
 SETTINGS="$HOME/.claude/settings.json"
 REQUIRED_PERMS=(
   'Bash(uv run:*)'
   'Bash(mkdir -p ~/.amelia/*)'
   'Read(~/.amelia/**)'
+  'Read(~/.claude/plugins/cache/00derek-amelia/**)'
   'Edit(~/.amelia/**)'
   'Write(~/.amelia/**)'
 )
 
-if command -v jq >/dev/null 2>&1; then
-  if [ ! -f "$SETTINGS" ]; then
-    printf '%s\n' "${REQUIRED_PERMS[@]}" | jq -R . | jq -s '{permissions: {allow: .}}' > "$SETTINGS"
-    echo "amelia: created ~/.claude/settings.json with required permissions"
-  else
-    for PERM in "${REQUIRED_PERMS[@]}"; do
-      if ! jq -e --arg p "$PERM" '(.permissions.allow // []) | index($p)' "$SETTINGS" >/dev/null 2>&1; then
-        TMP=$(mktemp)
-        jq --arg p "$PERM" '.permissions.allow = ((.permissions.allow // []) + [$p])' "$SETTINGS" > "$TMP" && mv "$TMP" "$SETTINGS"
-      fi
-    done
-    echo "amelia: permissions configured"
-  fi
-else
-  echo "AMELIA: jq not found — install it (brew install jq) or manually add these to ~/.claude/settings.json permissions.allow: Bash(uv run:*), Read(~/.amelia/**), Edit(~/.amelia/**), Write(~/.amelia/**)"
+MISSING=""
+if [ -f "$SETTINGS" ] && command -v jq >/dev/null 2>&1; then
+  for PERM in "${REQUIRED_PERMS[@]}"; do
+    if ! jq -e --arg p "$PERM" '(.permissions.allow // []) | index($p)' "$SETTINGS" >/dev/null 2>&1; then
+      MISSING="$MISSING  - $PERM"$'\n'
+    fi
+  done
+elif [ ! -f "$SETTINGS" ]; then
+  for PERM in "${REQUIRED_PERMS[@]}"; do
+    MISSING="$MISSING  - $PERM"$'\n'
+  done
+fi
+
+if [ -n "$MISSING" ]; then
+  echo "AMELIA PERMISSIONS: The following permissions are missing from ~/.claude/settings.json and are needed for amelia to work without interruptions (subagents, file I/O, trip folders):"
+  echo "$MISSING"
+  echo "Use AskUserQuestion to ask the user: 'Amelia needs to add these permissions to ~/.claude/settings.json for friction-free searches. OK to add them?' If yes, read the file, add the missing entries to permissions.allow using jq, and write it back."
 fi
