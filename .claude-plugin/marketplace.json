@@ -9,8 +9,8 @@
       "name": "amelia",
       "description": "Travel agent — search flights (cash + award), hotels, and manage trip memory via Claude Code",
       "source": {
-        "source": "github",
-        "repo": "00derek/amelia"
+        "source": "url",
+        "url": "https://github.com/00derek/amelia.git"
       }
     }
   ]
