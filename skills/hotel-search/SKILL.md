@@ -17,13 +17,13 @@ Before starting, read `~/.amelia/config.md` for:
 
 ## Input Collection (Standalone Mode)
 
-If invoked directly (not by orchestrator), use AskUserQuestion to collect:
+If invoked directly (not by orchestrator), collect missing info using AskUserQuestion. **Ask one question at a time** — don't batch. Skip anything with a clear default from config.
 
-1. **City** — e.g., "Taipei" or IATA code "TPE"
-2. **Check-in date** — e.g., "2026-06-03"
-3. **Check-out date** — e.g., "2026-06-07"
-4. **Budget** (optional) — default: $hotel_min_price–$hotel_max_price from config
-5. **Stars** (optional) — default: hotel_stars from config
+1. **City** — ask if not provided (e.g., "Taipei" or "TPE")
+2. **Check-in date** — ask if not provided
+3. **Check-out date** — ask if not provided
+4. **Budget** — default from config — only ask if user mentioned budget
+5. **Stars** — default from config — only ask if user mentioned preferences
 
 If orchestrator provides these, skip AskUserQuestion.
 

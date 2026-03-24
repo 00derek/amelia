@@ -19,15 +19,15 @@ Before searching, read `~/.amelia/config.md` for:
 
 ## Input Collection (Standalone Mode)
 
-If invoked directly (not by orchestrator), use AskUserQuestion to collect:
+If invoked directly (not by orchestrator), collect missing info using AskUserQuestion. **Ask one question at a time** — don't batch. Skip anything with a clear default from config.
 
-1. **Origin airport** — default: home_airport from config (SFO)
-2. **Destination airport** — e.g., "TPE" or "BOS"
-3. **Date** — e.g., "2026-06-03"
-4. **Cabin class** — economy (default), premium_economy, business, first
-5. **Stops** — 0 for nonstop (default), ANY, 1, 2
-6. **Time window** (optional) — e.g., "15-23" for departures 3pm-11pm
-7. **Profile** (optional) — e.g., "tournament" to load profile defaults
+1. **Destination airport** — ask if not provided (e.g., "TPE" or "BOS")
+2. **Date** — ask if not provided (e.g., "2026-06-03")
+3. **Origin airport** — default: home_airport from config — only ask if ambiguous
+4. **Cabin class** — offer options: economy, premium_economy, business, first
+5. **Stops** — offer options: nonstop, 1 stop, any
+6. **Time window** (optional) — only ask if user mentioned time preferences
+7. **Profile** (optional) — suggest if one fits
 
 If orchestrator provides these in the prompt, skip AskUserQuestion and use provided values.
 

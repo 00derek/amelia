@@ -34,16 +34,20 @@ Before any operation, read:
 
 ### Step 1: Parse Input
 
-Extract from user message or AskUserQuestion:
-- **Origin** (default: home_airport from config)
-- **Destination** (required)
-- **Date** (required, for outbound)
-- **Return date** (optional — derive from profile if available)
-- **Cabin** (optional — from profile or global default)
-- **Stops** (optional — from profile or global default)
-- **Min seats** (optional — for award search)
-- **Profile** (optional — e.g., "tournament", "international-leisure")
-- **Custom alias** (optional — auto-generated from destination if not provided)
+Extract as much as you can from the user's message. Only ask about what's missing or ambiguous — don't ask about things that have clear defaults in the config or profile.
+
+**Ask one question at a time using AskUserQuestion.** Do not batch multiple questions into a single message. Wait for each answer before asking the next. Provide selectable options where applicable.
+
+Fields to resolve:
+- **Origin** (default: home_airport from config — don't ask unless ambiguous)
+- **Destination** (required — ask if not provided)
+- **Date** (required, for outbound — ask if not provided)
+- **Return date** (ask only if not provided and not derivable from profile)
+- **Cabin** (use profile/config default — don't ask unless user seems undecided)
+- **Stops** (use profile/config default — don't ask)
+- **Min seats** (use profile/config default — don't ask)
+- **Profile** (suggest a match if one fits, ask to confirm)
+- **Custom alias** (auto-generate from destination — don't ask unless collision)
 
 ### Step 2: Generate Alias
 

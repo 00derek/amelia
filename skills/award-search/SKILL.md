@@ -29,15 +29,14 @@ Before searching, read `~/.amelia/config.md` for defaults (cabin, min_seats, aut
 
 ## Input Collection (Standalone Mode)
 
-If invoked directly, use AskUserQuestion to collect:
+If invoked directly, collect missing info using AskUserQuestion. **Ask one question at a time** — don't batch. Skip anything with a clear default from config.
 
-1. **Origin airport** — default: home_airport from config
-2. **Destination airport** — e.g., "TPE"
-3. **Date** — center date for search
-4. **Date range** (optional) — defaults to ±auto_widen_days from config
-5. **Cabin class** — economy, premium, business, first
-6. **Minimum seats** — default from config (e.g., 2)
-7. **Profile** (optional) — e.g., "international-leisure"
+1. **Destination airport** — ask if not provided (e.g., "TPE")
+2. **Date** — ask if not provided (center date for search)
+3. **Origin airport** — default: home_airport from config — only ask if ambiguous
+4. **Cabin class** — offer options: economy, premium, business, first
+5. **Minimum seats** — default from config — only ask if not set
+6. **Profile** (optional) — suggest if one fits
 
 If orchestrator provides these in the prompt, skip AskUserQuestion.
 
