@@ -36,18 +36,21 @@ Before any operation, read:
 
 Extract as much as you can from the user's message. Only ask about what's missing or ambiguous — don't ask about things that have clear defaults in the config or profile.
 
-**Ask one question at a time using AskUserQuestion.** Do not batch multiple questions into a single message. Wait for each answer before asking the next. Provide selectable options where applicable.
+**CRITICAL: Ask ONE question at a time. Do NOT list multiple questions in a single message. Send one question, wait for the answer, then ask the next if needed. This is not optional — never combine questions.**
 
-Fields to resolve:
-- **Origin** (default: home_airport from config — don't ask unless ambiguous)
-- **Destination** (required — ask if not provided)
-- **Date** (required, for outbound — ask if not provided)
-- **Return date** (ask only if not provided and not derivable from profile)
-- **Cabin** (use profile/config default — don't ask unless user seems undecided)
-- **Stops** (use profile/config default — don't ask)
-- **Min seats** (use profile/config default — don't ask)
-- **Profile** (suggest a match if one fits, ask to confirm)
-- **Custom alias** (auto-generate from destination — don't ask unless collision)
+Ask in this priority order (skip any that are already known or have defaults):
+1. **Destination** — only if not provided
+2. **Date** — only if not provided (outbound date)
+3. **Return date** — only if not provided and not derivable
+4. **Profile** — suggest a match if one fits, ask to confirm
+
+Do NOT ask about:
+- **Origin** — use home_airport from config
+- **Cabin** — use profile/config default
+- **Stops** — use profile/config default
+- **Min seats** — use profile/config default
+- **Routing/connections** — figure this out yourself based on airport connectivity (search each leg separately)
+- **Custom alias** — auto-generate from destination, only ask on collision
 
 ### Step 2: Generate Alias
 
