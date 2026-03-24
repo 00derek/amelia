@@ -5,7 +5,7 @@ description: Search for hotel rates via amelia CLI (Google Hotels data). Standal
 
 ## Overview
 
-Searches Google Hotels for hotel availability using `amelia hotels search`. Can run standalone (prompts for input) or orchestrated (receives params, returns results).
+Searches Google Hotels for hotel availability using `uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia hotels search`. Can run standalone (prompts for input) or orchestrated (receives params, returns results).
 
 Each invocation searches one city for one date range. The orchestrator handles dispatch.
 
@@ -32,7 +32,7 @@ If orchestrator provides these, skip AskUserQuestion.
 Run the amelia CLI:
 
 ```bash
-amelia hotels search \
+uv run --directory ${CLAUDE_PLUGIN_ROOT} amelia hotels search \
   --city {city} \
   --checkin {checkin} \
   --checkout {checkout} \
