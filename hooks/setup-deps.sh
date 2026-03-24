@@ -29,9 +29,7 @@ if [ ! -f "$HOME/.amelia/config.md" ]; then
   echo "amelia: created ~/.amelia/config.md — edit it to set your preferences"
 fi
 
-# Prompt user to create .env if it doesn't exist
+# Check for API keys — output instruction to Claude if missing
 if [ ! -f "$HOME/.amelia/.env" ]; then
-  echo "amelia: no API keys found. Create ~/.amelia/.env with your keys:"
-  echo "  echo 'SEATS_AERO_API_KEY=your-key' >> ~/.amelia/.env"
-  echo "  echo 'SERPAPI_KEY=your-key' >> ~/.amelia/.env"
+  echo "AMELIA SETUP REQUIRED: ~/.amelia/.env does not exist. Before running any travel searches, you MUST ask the user for their API keys and create the file. Ask for: SEATS_AERO_API_KEY (required — from seats.aero Pro plan) and SERPAPI_KEY (optional — for hotel search fallback). Write them to ~/.amelia/.env. Alternatively, run /amelia:setup which includes key collection."
 fi

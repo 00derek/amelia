@@ -59,12 +59,34 @@ For each profile they want, ask:
 
 They can add as many as they want. When they say they're done, move on.
 
-### Step 5: Award Search
+### Step 5: API Keys & Award Search
 
-> "Do you have a Seats.aero API key for searching award flights? If so, make sure it's in ~/.amelia/.env. Want award search enabled by default, or just for specific profiles?"
+Check if `~/.amelia/.env` exists. If it does, read it to see which keys are already set (show key names only, not values).
+
+> "Amelia needs API keys for flight and hotel searches. Let me check what you have..."
+
+If `.env` is missing or incomplete, ask for each key one at a time:
+
+1. **SEATS_AERO_API_KEY** (required for award search):
+   > "Do you have a Seats.aero API key? You need a Pro plan — sign up at seats.aero if not. Paste your key, or type 'skip' to skip award search."
+
+2. **SERPAPI_KEY** (optional, hotel search fallback):
+   > "Do you have a SerpAPI key? This is optional — hotel search works without it but SerpAPI provides better results. Paste your key, or type 'skip'."
+
+Write the keys to `~/.amelia/.env`:
+```
+SEATS_AERO_API_KEY=their-key
+SERPAPI_KEY=their-key
+```
+
+If a key was skipped, don't include that line. If the file already exists, only add/update keys they provided — preserve existing keys.
+
+Then ask about award search preference:
+> "Want award search enabled by default, or just for specific profiles?"
 
 - If they want it globally: set `award_search: true` in global defaults
 - If only for certain profiles: set it in those profiles only (default is false)
+- If they skipped the Seats.aero key: set `award_search: false`
 
 ### Step 6: Write Config
 
