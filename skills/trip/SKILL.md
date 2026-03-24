@@ -128,7 +128,7 @@ Use the **Agent tool** to dispatch searches in parallel. For each route in `trip
 **Cash flight search (always):**
 ```
 Agent prompt: "You are running the flight-search skill. Read the skill at
-skills/flight-search/SKILL.md and follow it exactly. You are in
+${CLAUDE_PLUGIN_ROOT}/skills/flight-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
 
 Search params:
@@ -144,7 +144,7 @@ Search params:
 **Award flight search (only if award_search is true):**
 ```
 Agent prompt: "You are running the award-search skill. Read the skill at
-skills/award-search/SKILL.md and follow it exactly. You are in
+${CLAUDE_PLUGIN_ROOT}/skills/award-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
 
 Search params:
@@ -159,7 +159,7 @@ Search params:
 **Hotel search (once per trip, not per route):**
 ```
 Agent prompt: "You are running the hotel-search skill. Read the skill at
-skills/hotel-search/SKILL.md and follow it exactly. You are in
+${CLAUDE_PLUGIN_ROOT}/skills/hotel-search/SKILL.md and follow it exactly. You are in
 orchestrated mode — return results as markdown, do NOT write files.
 
 Search params:
