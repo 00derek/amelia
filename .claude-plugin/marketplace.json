@@ -1,14 +1,16 @@
 {
   "name": "00derek-amelia",
+  "owner": {
+    "name": "Derek"
+  },
   "description": "Travel agent plugins — flights, awards, hotels, trip memory",
   "plugins": [
     {
       "name": "amelia",
       "description": "Travel agent — search flights (cash + award), hotels, and manage trip memory via Claude Code",
       "source": {
-        "type": "github",
-        "owner": "00derek",
-        "repo": "amelia"
+        "source": "github",
+        "repo": "00derek/amelia"
       }
     }
   ]
