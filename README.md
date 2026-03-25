@@ -45,7 +45,6 @@ It walks you through each section one question at a time:
 3. **Loyalty programs** — your airline/hotel memberships and status
 4. **Travel profiles** — named presets for different trip types (see below)
 5. **API keys** — collects and saves your Seats.aero and SerpAPI keys to `~/.amelia/.env`
-6. **Permissions** — asks to add the required Claude Code permissions to `~/.claude/settings.json` so searches run without interruptions
 
 Writes everything to `~/.amelia/config.md`. Re-run anytime to update — it shows your current settings and only changes what you ask for.
 

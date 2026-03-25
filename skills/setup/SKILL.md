@@ -88,29 +88,7 @@ Then ask about award search preference:
 - If only for certain profiles: set it in those profiles only (default is false)
 - If they skipped the Seats.aero key: set `award_search: false`
 
-### Step 6: Configure Permissions
-
-Amelia needs these permissions pre-approved in the user's settings so subagents and file operations work without prompts:
-
-- `Bash(uv run:*)` — subagents run the amelia CLI via uv
-- `Bash(mkdir -p ~/.amelia/*)` — creating trip folders under ~/.amelia/
-- `Read(~/.amelia/**)` — reading config, trip-index, trip state
-- `Read(~/.claude/plugins/cache/00derek-amelia/**)` — subagents reading amelia skill files
-- `Edit(~/.amelia/**)` — editing config and trip files
-- `Write(~/.amelia/**)` — writing trip results, .env, config
-
-Read `~/.claude/settings.json` and check which of the above are missing from `permissions.allow`.
-
-If any are missing, show the user the list and ask with AskUserQuestion:
-> "Amelia needs these permissions in ~/.claude/settings.json for friction-free searches. OK to add them?"
-
-Options: ["Yes, add them", "No, I'll handle permissions manually"]
-
-If yes: read the file, add the missing entries to `permissions.allow` using Bash with jq (create `permissions` and `allow` if they don't exist), and write it back — preserving all existing settings.
-
-If no: skip and warn that they'll get permission prompts during searches.
-
-### Step 7: Write Config
+### Step 6: Write Config
 
 After collecting everything, write `~/.amelia/config.md` in this format:
 
@@ -141,7 +119,7 @@ After collecting everything, write `~/.amelia/config.md` in this format:
 - hotels: [{chains}]
 ```
 
-### Step 8: Confirm
+### Step 7: Confirm
 
 Show the user the final config and ask if they want to change anything. If yes, make the edits. If not, save and confirm:
 
