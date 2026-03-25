@@ -15,7 +15,7 @@ If you install during an active session, run `/reload-plugins` to activate.
 
 ### API Keys
 
-Create `~/.amelia/.env` with your keys:
+`/amelia:setup` will ask for your keys and save them. Or create `~/.amelia/.env` manually:
 
 ```bash
 mkdir -p ~/.amelia
@@ -32,13 +32,48 @@ The plugin loads these automatically — no need to export them in your shell pr
 
 ### Set Up Your Preferences
 
-Run the setup skill to configure your home airport, cabin preferences, loyalty programs, and travel profiles:
+Run the setup skill to configure everything in one go:
 
 ```
 /amelia:setup
 ```
 
-It walks you through each section interactively and writes `~/.amelia/config.md`. You can re-run it anytime to update.
+It walks you through each section one question at a time:
+
+1. **Basics** — home airport, default cabin, number of travelers
+2. **Hotels** — budget range, star rating, preferred chains
+3. **Loyalty programs** — your airline/hotel memberships and status
+4. **Travel profiles** — named presets for different trip types (see below)
+5. **API keys** — collects and saves your Seats.aero and SerpAPI keys to `~/.amelia/.env`
+6. **Permissions** — asks to add the required Claude Code permissions to `~/.claude/settings.json` so searches run without interruptions
+
+Writes everything to `~/.amelia/config.md`. Re-run anytime to update — it shows your current settings and only changes what you ask for.
+
+#### Example profiles
+
+Profiles are presets for different trip types. Just describe your travel pattern and Amelia turns it into a profile:
+
+> "I go to poker tournaments most weekends — I fly out Friday afternoon, need to arrive by 10pm, and come back Monday evening. Always nonstop, economy."
+
+Amelia creates a **tournament** profile with Friday departure windows, arrival cutoffs, Monday return times, and nonstop-only.
+
+> "For international vacations I want business class, flexible dates, award search enabled, and nicer hotels up to $400/night."
+
+Amelia creates an **international-leisure** profile with business cabin, widened date search, award availability, and 4-5 star hotel filters.
+
+Then just reference the profile when searching:
+
+> "search SFO to Vegas next Friday using my tournament profile"
+
+> "plan a trip to Brazil with my international-leisure profile"
+
+You can also just start searching without a profile and Amelia will use your global defaults:
+
+> "find flights from SFO to Tokyo in July"
+
+> "plan a trip to Brazil arriving JPA by 7/20"
+
+If your config is missing, Amelia will prompt you to run setup first.
 
 ## What You Can Ask
 
