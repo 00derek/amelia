@@ -151,3 +151,43 @@ def test_route_creation():
         source="united",
     )
     assert route.origin_region == "North America"
+
+
+def test_price_insight_creation():
+    from amelia.models import PriceInsight
+
+    insight = PriceInsight(
+        origin="SFO",
+        destination="GRU",
+        date="2026-07-18",
+        cabin="business",
+        cabin_fallback=None,
+        lowest_price=1403,
+        price_level="low",
+        typical_range_low=1800,
+        typical_range_high=4500,
+        price_history=[[1710000000, 2100], [1711000000, 1900]],
+        signal="BUY",
+    )
+    assert insight.signal == "BUY"
+    assert insight.typical_range_low == 1800
+
+
+def test_price_insight_no_data():
+    from amelia.models import PriceInsight
+
+    insight = PriceInsight(
+        origin="SFO",
+        destination="GRU",
+        date="2026-07-18",
+        cabin="business",
+        cabin_fallback="economy",
+        lowest_price=None,
+        price_level=None,
+        typical_range_low=None,
+        typical_range_high=None,
+        price_history=[],
+        signal="NO_DATA",
+    )
+    assert insight.signal == "NO_DATA"
+    assert insight.cabin_fallback == "economy"

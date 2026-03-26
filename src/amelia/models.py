@@ -128,3 +128,18 @@ class SearchResult:
     rate_limit_remaining: int | None
     empty: bool
     error: str | None
+
+
+@dataclass
+class PriceInsight:
+    origin: str
+    destination: str
+    date: str
+    cabin: str
+    cabin_fallback: str | None
+    lowest_price: int | None
+    price_level: str | None
+    typical_range_low: int | None
+    typical_range_high: int | None
+    price_history: list[list[int]]  # [[unix_timestamp, price_usd], ...]
+    signal: str  # BUY, GOOD, WAIT, HIGH, NO_DATA
