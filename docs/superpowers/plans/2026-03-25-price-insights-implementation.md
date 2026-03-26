@@ -34,8 +34,9 @@ tests/test_price_signals.py — Signal derivation tests (all 5 branches + edge c
 ### Modify (tests)
 
 ```
+tests/test_models.py        — Add PriceInsight creation tests
 tests/test_flights.py       — Tests for get_price_insights() with mocked SerpAPI
-tests/test_cli.py           — Test for `flights insights --help`
+tests/test_cli.py           — Tests for `flights insights` (help, success, errors)
 ```
 
 ---
@@ -263,24 +264,37 @@ git commit -m "feat: add signal derivation logic for price insights"
 Append to `tests/test_flights.py`:
 
 ```python
+import os
 from unittest.mock import patch, MagicMock
 from amelia.flights import get_price_insights
 
 
-@patch("amelia.flights.serpapi")
-def test_get_price_insights_success(mock_serpapi):
+def _mock_serpapi(search_results):
+    """Helper: create a mock serpapi module with given search results."""
+    mock_mod = MagicMock()
     mock_client = MagicMock()
-    mock_serpapi.Client.return_value = mock_client
-    mock_client.search.return_value = {
+    mock_mod.Client.return_value = mock_client
+    if isinstance(search_results, list):
+        mock_client.search.side_effect = search_results
+    else:
+        mock_client.search.return_value = search_results
+    return mock_mod
+
+
+@patch.dict("os.environ", {"SERPAPI_KEY": "test-key"})
+@patch.dict("sys.modules", {"serpapi": MagicMock()})
+def test_get_price_insights_success():
+    import sys
+    mock_mod = _mock_serpapi({
         "price_insights": {
             "lowest_price": 1403,
             "price_level": "low",
             "typical_price_range": [1800, 4500],
             "price_history": [[1710000000, 2100]],
         }
-    }
-    with patch.dict("os.environ", {"SERPAPI_KEY": "test-key"}):
-        result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
+    })
+    sys.modules["serpapi"] = mock_mod
+    result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
     assert result.signal == "BUY"
     assert result.lowest_price == 1403
     assert result.typical_range_low == 1800
@@ -288,38 +302,54 @@ def test_get_price_insights_success(mock_serpapi):
     assert result.cabin_fallback is None
 
 
-@patch("amelia.flights.serpapi")
-def test_get_price_insights_no_data_falls_back_to_economy(mock_serpapi):
-    mock_client = MagicMock()
-    mock_serpapi.Client.return_value = mock_client
+@patch.dict("os.environ", {"SERPAPI_KEY": "test-key"})
+def test_get_price_insights_no_data_falls_back_to_economy():
+    import sys
     # First call (business) returns no insights, second (economy) returns data
-    mock_client.search.side_effect = [
-        {},  # no price_insights key
-        {
-            "price_insights": {
-                "lowest_price": 500,
-                "price_level": "typical",
-                "typical_price_range": [400, 800],
-                "price_history": [],
-            }
-        },
-    ]
-    with patch.dict("os.environ", {"SERPAPI_KEY": "test-key"}):
-        result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
+    mock_mod = _mock_serpapi([
+        {},
+        {"price_insights": {"lowest_price": 500, "price_level": "typical",
+         "typical_price_range": [400, 800], "price_history": []}},
+    ])
+    sys.modules["serpapi"] = mock_mod
+    result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
     assert result.cabin_fallback == "economy"
     assert result.signal == "WAIT"
     assert result.lowest_price == 500
 
 
-@patch("amelia.flights.serpapi")
-def test_get_price_insights_no_data_both_cabins(mock_serpapi):
-    mock_client = MagicMock()
-    mock_serpapi.Client.return_value = mock_client
-    mock_client.search.side_effect = [{}, {}]  # neither has insights
-    with patch.dict("os.environ", {"SERPAPI_KEY": "test-key"}):
-        result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
+@patch.dict("os.environ", {"SERPAPI_KEY": "test-key"})
+def test_get_price_insights_no_data_both_cabins():
+    import sys
+    mock_mod = _mock_serpapi([{}, {}])
+    sys.modules["serpapi"] = mock_mod
+    result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
     assert result.signal == "NO_DATA"
     assert result.cabin_fallback == "economy"
+
+
+@patch.dict("os.environ", {"SERPAPI_KEY": "test-key"})
+def test_get_price_insights_economy_no_fallback():
+    """When cabin is already economy and no data, cabin_fallback is None."""
+    import sys
+    mock_mod = _mock_serpapi({})
+    sys.modules["serpapi"] = mock_mod
+    result = get_price_insights("SFO", "GRU", "2026-07-18", "economy")
+    assert result.signal == "NO_DATA"
+    assert result.cabin_fallback is None
+
+
+@patch.dict("os.environ", {"SERPAPI_KEY": "test-key"})
+def test_get_price_insights_price_level_only():
+    """SerpAPI returns price_level but no lowest_price or range — still useful."""
+    import sys
+    mock_mod = _mock_serpapi({
+        "price_insights": {"price_level": "high"}
+    })
+    sys.modules["serpapi"] = mock_mod
+    result = get_price_insights("SFO", "GRU", "2026-07-18", "business")
+    assert result.signal == "HIGH"
+    assert result.lowest_price is None
 
 
 def test_get_price_insights_no_api_key():
@@ -355,38 +385,34 @@ def get_price_insights(
     """Get Google Flights price insights via SerpAPI.
 
     Queries the requested cabin first. If no insights returned, falls back to economy.
-    Raises RuntimeError if SERPAPI_KEY is not set.
+    Raises RuntimeError if SERPAPI_KEY is not set or serpapi not installed.
     """
     try:
-        import serpapi as serpapi_module
+        import serpapi
     except ImportError:
         raise RuntimeError("serpapi package not installed")
-
-    # Make serpapi accessible for mocking
-    global serpapi
-    serpapi = serpapi_module
 
     api_key = os.environ.get("SERPAPI_KEY")
     if not api_key:
         raise RuntimeError("SERPAPI_KEY not set")
 
-    return _query_insights(origin, destination, date, cabin, api_key)
+    return _query_insights(serpapi, origin, destination, date, cabin, api_key)
 
 
 def _query_insights(
-    origin: str, destination: str, date: str, cabin: str, api_key: str,
+    serpapi_mod, origin: str, destination: str, date: str, cabin: str, api_key: str,
 ) -> PriceInsight:
     """Query SerpAPI for price insights, with cabin fallback."""
     travel_class = SERPAPI_CABIN_MAP.get(cabin.lower(), 1)
 
     # Try requested cabin
-    result = _fetch_insights(origin, destination, date, travel_class, api_key)
+    result = _fetch_insights(serpapi_mod, origin, destination, date, travel_class, api_key)
     if result is not None:
         return _build_insight(origin, destination, date, cabin, None, result)
 
     # Fallback to economy if different cabin was requested
     if cabin.lower() != "economy":
-        result = _fetch_insights(origin, destination, date, 1, api_key)
+        result = _fetch_insights(serpapi_mod, origin, destination, date, 1, api_key)
         if result is not None:
             return _build_insight(origin, destination, date, cabin, "economy", result)
 
@@ -401,9 +427,13 @@ def _query_insights(
 
 
 def _fetch_insights(
-    origin: str, destination: str, date: str, travel_class: int, api_key: str,
+    serpapi_mod, origin: str, destination: str, date: str, travel_class: int, api_key: str,
 ) -> dict | None:
-    """Call SerpAPI Google Flights and return price_insights dict, or None."""
+    """Call SerpAPI Google Flights and return price_insights dict, or None.
+
+    Returns the price_insights dict if it contains any useful data (lowest_price
+    or price_level). Returns None only if price_insights is completely absent.
+    """
     params = {
         "engine": "google_flights",
         "departure_id": origin,
@@ -415,10 +445,13 @@ def _fetch_insights(
         "currency": "USD",
         "hl": "en",
     }
-    client = serpapi.Client(api_key=api_key)
+    client = serpapi_mod.Client(api_key=api_key)
     response = client.search(params)
     insights = response.get("price_insights")
-    if not insights or "lowest_price" not in insights:
+    if not insights:
+        return None
+    # Accept if it has lowest_price OR price_level — don't require both
+    if "lowest_price" not in insights and "price_level" not in insights:
         return None
     return insights
 
@@ -451,15 +484,12 @@ def _build_insight(
 from amelia.models import Flight, FlightLeg, PriceInsight
 ```
 
-Also add `serpapi = None` module-level variable after the imports for mock support:
-```python
-serpapi = None  # set by get_price_insights() for testability
-```
+No module-level `serpapi` variable needed — `import serpapi` happens inside `get_price_insights()` at call time (same pattern as `hotels.py`). Tests mock via `sys.modules["serpapi"]`.
 
 - [ ] **Step 4: Run all flights tests**
 
 Run: `cd /Users/derek/repo/amelia && uv run python -m pytest tests/test_flights.py -v`
-Expected: All tests PASS (2 original + 4 new).
+Expected: All tests PASS (2 original + 7 new).
 
 - [ ] **Step 5: Commit**
 
@@ -478,9 +508,12 @@ git commit -m "feat: add get_price_insights() with SerpAPI integration"
 
 - [ ] **Step 1: Write failing test**
 
-Append to `tests/test_cli.py`:
+Append to `tests/test_cli.py` (add `from unittest.mock import patch` to existing imports):
 
 ```python
+from unittest.mock import patch
+
+
 def test_flights_insights_help():
     runner = CliRunner()
     result = runner.invoke(main, ["flights", "insights", "--help"])
@@ -489,6 +522,15 @@ def test_flights_insights_help():
     assert "--to" in result.output
     assert "--date" in result.output
     assert "--cabin" in result.output
+
+
+def test_flights_insights_no_api_key():
+    """Should exit with code 2 when SERPAPI_KEY is not set."""
+    runner = CliRunner()
+    with patch.dict("os.environ", {}, clear=True):
+        result = runner.invoke(main, ["flights", "insights",
+                               "--from", "SFO", "--to", "GRU", "--date", "2026-07-18"])
+    assert result.exit_code == 2
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -511,6 +553,7 @@ Add after the `flights_search` function in `src/amelia/cli.py`:
 def flights_insights(origin, destination, date, cabin):
     """Get price insights — is now a good time to buy?"""
     from amelia.flights import get_price_insights
+    import requests
 
     try:
         result = get_price_insights(
@@ -521,6 +564,8 @@ def flights_insights(origin, destination, date, cabin):
             _error(str(e), "AUTH_MISSING", exit_code=2)
         else:
             _error(str(e), "SEARCH_ERROR")
+    except (requests.RequestException, ConnectionError, TimeoutError) as e:
+        _error(f"Network error: {e}", "NETWORK_ERROR", exit_code=4)
 
     print(to_json_str(to_json(result)))
 ```
@@ -528,7 +573,7 @@ def flights_insights(origin, destination, date, cabin):
 - [ ] **Step 4: Run all CLI tests**
 
 Run: `cd /Users/derek/repo/amelia && uv run python -m pytest tests/test_cli.py -v`
-Expected: All tests PASS (6 original + 1 new).
+Expected: All tests PASS (6 original + 2 new).
 
 - [ ] **Step 5: Commit**
 
