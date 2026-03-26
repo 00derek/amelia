@@ -222,7 +222,41 @@ Each append is a new run entry:
 {subagent's returned markdown table}
 ```
 
-### Step 7: Generate summary.md
+### Step 7: Run Price Insights
+
+After all search subagents return, run price insights **sequentially** (not via subagent) for each route. Use the `amelia flights insights` CLI command directly via Bash:
+
+For each route in `trip.json.routes`:
+
+```bash
+{AMELIA_CMD} flights insights \
+  --from {route.from} --to {route.to} --date {route.date} \
+  --cabin {cabin_for_leg}
+```
+
+Where `cabin_for_leg` is:
+- The trip's configured cabin for international legs (direction == "outbound" or "return")
+- `economy` for domestic legs (direction == "domestic")
+
+Parse the JSON output. Collect all results into a Price Signals table.
+
+Append to `~/.amelia/trips/{alias}/price-signals.md`:
+
+```markdown
+---
+
+## Run: {YYYY-MM-DD}
+
+| Leg | Price | Typical Range | Level | Signal |
+|-----|-------|---------------|-------|--------|
+| {origin}→{dest} | ${lowest_price} | ${range_low}–${range_high} | {price_level} | {signal} |
+```
+
+If previous entries exist in `price-signals.md`, compare signals and note changes (e.g., "SFO→GRU was WAIT, now BUY").
+
+If `SERPAPI_KEY` is not set, skip this step silently — price insights are optional.
+
+### Step 8: Generate summary.md
 
 Write/overwrite `~/.amelia/trips/{alias}/summary.md`:
 
@@ -236,6 +270,12 @@ Write/overwrite `~/.amelia/trips/{alias}/summary.md`:
 **Total runs**: {count}
 
 ---
+
+## Price Signals
+
+| Leg | Current Best | Typical Range | Level | Signal |
+|-----|-------------|---------------|-------|--------|
+| {origin}→{dest} ({cabin}) | ${lowest_price} | ${range_low}–${range_high} | {price_level} | **{signal}** |
 
 ## Best Cash Flights
 
@@ -262,7 +302,7 @@ Write/overwrite `~/.amelia/trips/{alias}/summary.md`:
 - Profile: {profile}, Award search: {true/false}
 ```
 
-### Step 8: Update Metadata
+### Step 9: Update Metadata
 
 Update `trip.json`: set `last_searched`, increment `search_count`.
 Present summary to user.
