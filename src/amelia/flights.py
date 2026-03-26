@@ -16,6 +16,45 @@ SORT_MAP = {
     "arrival": "ARRIVAL_TIME",
 }
 
+SERPAPI_CABIN_MAP = {
+    "economy": 1,
+    "premium_economy": 2,
+    "business": 3,
+    "first": 4,
+}
+
+
+def derive_signal(
+    lowest_price: int | None,
+    price_level: str | None,
+    typical_range_low: int | None,
+    typical_range_high: int | None,
+) -> str:
+    """Derive buy/wait signal from price insights data.
+
+    Returns: BUY, GOOD, WAIT, HIGH, or NO_DATA.
+    """
+    has_range = typical_range_low is not None and typical_range_high is not None
+    has_level = price_level is not None
+
+    if has_range and lowest_price is not None:
+        if lowest_price <= typical_range_low:
+            return "BUY"
+        if price_level == "low":
+            return "GOOD"
+        if price_level == "high":
+            return "HIGH"
+        return "WAIT"
+
+    if has_level:
+        if price_level == "low":
+            return "GOOD"
+        if price_level == "high":
+            return "HIGH"
+        return "WAIT"
+
+    return "NO_DATA"
+
 
 def flight_to_model(flight) -> Flight:
     """Convert a fli FlightResult to our Flight dataclass."""
