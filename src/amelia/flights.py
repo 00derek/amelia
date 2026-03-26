@@ -1,6 +1,8 @@
 """Google Flights search via the flights package (import name: fli)."""
 
-from amelia.models import Flight, FlightLeg
+import os
+
+from amelia.models import Flight, FlightLeg, PriceInsight
 
 CABIN_MAP = {
     "economy": "ECONOMY",
@@ -54,6 +56,125 @@ def derive_signal(
         return "WAIT"
 
     return "NO_DATA"
+
+
+def get_price_insights(
+    origin: str,
+    destination: str,
+    date: str,
+    cabin: str = "economy",
+) -> PriceInsight:
+    """Get Google Flights price insights via SerpAPI."""
+    try:
+        import serpapi
+    except ImportError:
+        raise RuntimeError("serpapi package not installed")
+
+    api_key = os.environ.get("SERPAPI_KEY")
+    if not api_key:
+        raise RuntimeError("SERPAPI_KEY not set")
+
+    return _query_insights(serpapi, origin, destination, date, cabin, api_key)
+
+
+def _query_insights(
+    serpapi_mod,
+    origin: str,
+    destination: str,
+    date: str,
+    cabin: str,
+    api_key: str,
+) -> PriceInsight:
+    """Query SerpAPI for price insights, with cabin fallback."""
+    travel_class = SERPAPI_CABIN_MAP.get(cabin.lower(), 1)
+
+    result = _fetch_insights(
+        serpapi_mod, origin, destination, date, travel_class, api_key
+    )
+    if result is not None:
+        return _build_insight(origin, destination, date, cabin, None, result)
+
+    if cabin.lower() != "economy":
+        result = _fetch_insights(serpapi_mod, origin, destination, date, 1, api_key)
+        if result is not None:
+            return _build_insight(origin, destination, date, cabin, "economy", result)
+
+    return PriceInsight(
+        origin=origin,
+        destination=destination,
+        date=date,
+        cabin=cabin,
+        cabin_fallback="economy" if cabin.lower() != "economy" else None,
+        lowest_price=None,
+        price_level=None,
+        typical_range_low=None,
+        typical_range_high=None,
+        price_history=[],
+        signal="NO_DATA",
+    )
+
+
+def _fetch_insights(
+    serpapi_mod,
+    origin: str,
+    destination: str,
+    date: str,
+    travel_class: int,
+    api_key: str,
+) -> dict | None:
+    """Call SerpAPI Google Flights and return price_insights dict, or None."""
+    params = {
+        "engine": "google_flights",
+        "departure_id": origin,
+        "arrival_id": destination,
+        "outbound_date": date,
+        "type": "2",
+        "travel_class": travel_class,
+        "adults": 1,
+        "currency": "USD",
+        "hl": "en",
+    }
+    client = serpapi_mod.Client(api_key=api_key)
+    response = client.search(params)
+    insights = response.get("price_insights")
+    if not insights:
+        return None
+    if "lowest_price" not in insights and "price_level" not in insights:
+        return None
+    return insights
+
+
+def _build_insight(
+    origin: str,
+    destination: str,
+    date: str,
+    cabin: str,
+    cabin_fallback: str | None,
+    raw: dict,
+) -> PriceInsight:
+    """Build PriceInsight from raw SerpAPI price_insights dict."""
+    lowest = raw.get("lowest_price")
+    level = raw.get("price_level")
+    typical = raw.get("typical_price_range", [])
+    range_low = typical[0] if len(typical) >= 2 else None
+    range_high = typical[1] if len(typical) >= 2 else None
+    history = raw.get("price_history", [])
+
+    signal = derive_signal(lowest, level, range_low, range_high)
+
+    return PriceInsight(
+        origin=origin,
+        destination=destination,
+        date=date,
+        cabin=cabin,
+        cabin_fallback=cabin_fallback,
+        lowest_price=lowest,
+        price_level=level,
+        typical_range_low=range_low,
+        typical_range_high=range_high,
+        price_history=history,
+        signal=signal,
+    )
 
 
 def flight_to_model(flight) -> Flight:
