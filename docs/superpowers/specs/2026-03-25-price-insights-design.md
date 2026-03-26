@@ -40,11 +40,22 @@ amelia flights insights --from SFO --to GRU --date 2026-07-18 [--cabin business]
 **Cabin fallback:** If SerpAPI returns no price insights for the requested cabin (e.g., business), retry with economy. Set `"cabin_fallback": "economy"` in output so the skill knows the data is approximate.
 
 **Signal derivation:**
-- `BUY` — `lowest_price` <= `typical_range_low`
-- `GOOD` — `price_level` == "low" but price is above typical_range_low
+
+If `typical_price_range` is present (2-element array):
+- `BUY` — `lowest_price` <= `typical_range_low` (price is below the normal floor)
+- `GOOD` — `lowest_price` is within typical range but `price_level` == "low" (trending down)
 - `WAIT` — `price_level` == "typical"
 - `HIGH` — `price_level` == "high"
+
+If `typical_price_range` is missing but `price_level` is present:
+- `GOOD` — `price_level` == "low"
+- `WAIT` — `price_level` == "typical"
+- `HIGH` — `price_level` == "high"
+
+If neither is present:
 - `NO_DATA` — SerpAPI returned no price insights for this route/cabin (even after fallback)
+
+Example: SFO→GRU business. Typical range $1,800–$4,500. Current best $1,403. Since $1,403 < $1,800 → **BUY**. If current were $2,000 and price_level="low" → **GOOD** (within range but trending favorably).
 
 **Exit codes:** Same as other commands (0=success, 1=bad request, 2=auth error, 4=network error).
 
@@ -59,7 +70,7 @@ params = {
     "arrival_id": destination,     # IATA code
     "outbound_date": date,         # YYYY-MM-DD
     "type": "2",                   # 1=round-trip, 2=one-way
-    "travel_class": 2,             # 1=economy, 2=premium_economy, 3=business, 4=first
+    "travel_class": 3,             # 1=economy, 2=premium_economy, 3=business, 4=first
     "adults": 1,
     "currency": "USD",
     "hl": "en",
@@ -86,6 +97,32 @@ Response contains `price_insights` object:
 
 If `price_insights` is missing or empty in the response, the result is `NO_DATA`.
 
+### SerpAPI Client Pattern
+
+Follows the same pattern as `hotels.py`:
+
+```python
+import serpapi
+api_key = os.environ.get("SERPAPI_KEY")
+if not api_key:
+    raise RuntimeError("SERPAPI_KEY not set")
+client = serpapi.Client(api_key=api_key)
+results = client.search(params)
+```
+
+A new `SERPAPI_CABIN_MAP` dict maps cabin names to SerpAPI travel_class integers (separate from the existing `CABIN_MAP` which maps to fli library strings).
+
+### Error Handling
+
+- `SERPAPI_KEY` not set → exit code 2 (auth error)
+- `serpapi` import fails → exit code 1 (bad request)
+- Network/timeout errors from `serpapi.Client` → exit code 4 (network error)
+- API returns data but no `price_insights` → not an error, return `NO_DATA` signal with exit code 0
+
+### Cabin Fallback Rate Limit
+
+The fallback retry (business → economy) adds at most 1 extra SerpAPI call per route. For a 4-leg trip, worst case is 8 calls. SerpAPI's rate limits are generous (5,000 searches/month on paid plans). No special throttling needed, but the trip skill should run insights sequentially (not parallel) to be respectful.
+
 ## Data Model
 
 New dataclass in `src/amelia/models.py`:
@@ -102,8 +139,8 @@ class PriceInsight:
     price_level: str | None
     typical_range_low: int | None
     typical_range_high: int | None
-    price_history: list[list[int]]
-    signal: str
+    price_history: list[list[int]]  # [[unix_timestamp, price_usd], ...]
+    signal: str  # BUY, GOOD, WAIT, HIGH, NO_DATA
 ```
 
 ## Trip Skill Integration
@@ -144,6 +181,20 @@ Insights are appended to `~/.amelia/trips/{alias}/price-signals.md`:
 
 The trip skill reads previous entries to note signal changes: "SFO→GRU was WAIT last run, now BUY."
 
+### Trip skill dispatch
+
+The trip skill runs insights **sequentially** (not via subagents) after all searches complete. For each route in `trip.json.routes`:
+
+```bash
+amelia flights insights \
+  --from {route.from} --to {route.to} --date {route.date} \
+  --cabin {cabin_for_leg}
+```
+
+Where `cabin_for_leg` is the trip's configured cabin for international legs, or `economy` for domestic legs (direction == "domestic").
+
+The skill parses each JSON result, builds the Price Signals table, and compares to previous `price-signals.md` entries if they exist.
+
 ### No changes to standalone skills
 
 `flight-search`, `award-search`, `hotel-search` skills are unchanged. Price insights only run through the trip orchestrator.
@@ -158,6 +209,7 @@ The trip skill reads previous entries to note signal changes: "SFO→GRU was WAI
 | `skills/trip/SKILL.md` | Add insights call after checks, Price Signals section |
 | `tests/test_flights.py` | Tests for `get_price_insights()` |
 | `tests/test_cli.py` | Test for `flights insights --help` |
+| `tests/test_price_signals.py` | Signal derivation logic — all 5 branches + edge cases |
 
 **Not changed:** `awards.py`, `hotels.py`, `config.py`, `output.py`, other skills.
 
