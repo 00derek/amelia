@@ -234,6 +234,36 @@ def flights_search(
     print(to_json_str(to_json(results)))
 
 
+@flights.command("insights")
+@click.option("--from", "origin", required=True, help="Origin IATA code")
+@click.option("--to", "destination", required=True, help="Destination IATA code")
+@click.option("--date", required=True, help="Departure date YYYY-MM-DD")
+@click.option(
+    "--cabin", default="economy", help="economy, premium_economy, business, first"
+)
+def flights_insights(origin, destination, date, cabin):
+    """Get price insights — is now a good time to buy?"""
+    from amelia.flights import get_price_insights
+    import requests
+
+    try:
+        result = get_price_insights(
+            origin=origin,
+            destination=destination,
+            date=date,
+            cabin=cabin,
+        )
+    except RuntimeError as e:
+        if "SERPAPI_KEY" in str(e):
+            _error(str(e), "AUTH_MISSING", exit_code=2)
+        else:
+            _error(str(e), "SEARCH_ERROR")
+    except (requests.RequestException, ConnectionError, TimeoutError) as e:
+        _error(f"Network error: {e}", "NETWORK_ERROR", exit_code=4)
+
+    print(to_json_str(to_json(result)))
+
+
 # --- Hotels ---
 
 
