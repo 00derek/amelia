@@ -6,7 +6,7 @@ Add a "things to do" feature to the trip skill. For each destination stay in a m
 
 ## Requirements
 
-- **Source**: Claude-generated (no external API). Leverage LLM knowledge of destinations.
+- **Source**: Web search (4 parallel searches per city) for validated data, then Claude compiles and ranks. Searches: top attractions, TripAdvisor attractions, best restaurants (general), best Asian restaurants (Taiwanese, Chinese, Japanese, Korean).
 - **Scope per destination**: 10-20 activities, sorted into 3 tiers:
   - **Must-do** — the non-negotiable highlights
   - **Highly recommended** — strong contenders worth prioritizing
@@ -21,7 +21,7 @@ Add a "things to do" feature to the trip skill. For each destination stay in a m
 
 A new `skills/activities/SKILL.md` subskill, following the same pattern as `flight-search` and `hotel-search`. Dispatched by the trip orchestrator but also usable standalone.
 
-No Python data model, no CLI command, no external API. Pure LLM generation in the skill layer.
+No Python data model, no CLI command. Uses WebSearch tool for real attraction/restaurant data, then Claude compiles and ranks.
 
 ### Activities Subskill (`skills/activities/SKILL.md`)
 
@@ -151,7 +151,7 @@ Activities are **NOT** re-generated on "check again" runs. They are static knowl
 
 - Python data model for activities (no `models.py` changes)
 - CLI command for activities (no `cli.py` changes)
-- External API integration (no SerpAPI/Google Places calls)
+- Dedicated attractions API (uses WebSearch instead of SerpAPI/Google Places directly)
 - Booking links or pricing for activities
 - User ratings or reviews
 - Map/location data
