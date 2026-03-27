@@ -85,6 +85,7 @@ Create folder structure:
 ├── trip.json
 ├── flights/
 ├── hotels/
+├── activities/
 └── summary.md
 ```
 
@@ -203,7 +204,23 @@ Search params:
 - Brands: {hotel_search.brands}"
 ```
 
-Dispatch all applicable searches simultaneously.
+**Activities (one per destination stay):**
+
+For each entry in `trip.json.hotel_search` (which defines the destination stays):
+
+```
+Agent prompt: "You are running the activities skill. Read the skill at
+${CLAUDE_PLUGIN_ROOT}/skills/activities/SKILL.md and follow it exactly. You are in
+orchestrated mode — return results as markdown, do NOT write files.
+
+Params:
+- City: {hotel_search[i].city}
+- Check-in: {hotel_search[i].checkin}
+- Check-out: {hotel_search[i].checkout}
+- Traveler context: {any relevant context from profile or user input, or omit}"
+```
+
+Dispatch all applicable searches and activities simultaneously.
 
 ### Step 6: Collect Results and Write Files
 
@@ -212,6 +229,7 @@ Wait for all subagents to return. For each result:
 - Cash flights per route → append to `~/.amelia/trips/{alias}/flights/cash-{origin}-{dest}.md`
 - Awards per route → append to `~/.amelia/trips/{alias}/flights/awards-{origin}-{dest}.md`
 - Hotels → append to `~/.amelia/trips/{alias}/hotels/cash-hotels.md`
+- Activities per city → write to `~/.amelia/trips/{alias}/activities/{city-slug}.md` (e.g., `joao-pessoa.md`)
 
 Each append is a new run entry:
 ```markdown
@@ -291,6 +309,11 @@ Write/overwrite `~/.amelia/trips/{alias}/summary.md`:
 
 *For points rates, check [rooms.aero](https://rooms.aero)*
 
+## Things to Do
+
+{For each destination stay, include the Must-Do tier and suggested schedule table.
+Full ranked lists are in activities/{city-slug}.md}
+
 ---
 
 ## Key Findings
@@ -326,7 +349,7 @@ Read last run from flight log files for previous prices.
 
 ### Step 3: Re-dispatch Searches
 
-Same as New Trip Step 5, using stored params from trip.json.
+Same as New Trip Step 5, using stored params from trip.json. **Skip activities** — they are static knowledge and do not need re-generation. Only re-generate activities if the user explicitly asks or if trip dates have changed.
 
 ### Step 4: Write Results with Change Tracking
 
